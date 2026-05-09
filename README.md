@@ -25,7 +25,7 @@ Pastikan software berikut sudah terinstall di komputer kamu:
 Clone project dari GitHub ke komputer lokal kamu:
 
 ```bash
-git clone https://github.com/username/nama-project.git
+git clone https://github.com/AdnanAnwarR/loundry.git
 ```
 
 Masuk ke folder project:

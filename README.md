@@ -90,11 +90,12 @@ Sesuaikan konfigurasi database di file `.env`:
 
 ```env
 database.default.hostname = localhost
-database.default.database = nama_database_kamu
+database.default.database = loundry
 database.default.username = root
-database.default.password = password_kamu
+database.default.password =
 database.default.DBDriver = MySQLi
-database.default.port     = 3306
+database.default.DBPrefix =
+database.default.port = 3306
 ```
 
 Buat database baru di MySQL sesuai nama yang kamu tulis di `database.default.database`.

@@ -3,7 +3,7 @@
 
 <div class="pagetitle">
   <h1>Kelola Staff</h1>
-  <nav>
+  <nav> 
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="<?= base_url('admin/dashboard') ?>">Dashboard</a></li>
       <li class="breadcrumb-item active">Staff</li>

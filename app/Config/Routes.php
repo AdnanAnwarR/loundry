@@ -55,6 +55,8 @@ $routes->group('admin', ['filter' => 'auth:admin'], static function ($routes) {
 // Route Group untuk Staff
 $routes->group('staff', ['filter' => 'auth:staff'], static function ($routes) {
     $routes->get('/', 'StaffController::index');
+    $routes->get('jadwal-tugas-harian', 'StaffJadwalController::index');
+    $routes->get('riwayat-pekerjaan', 'StaffRiwayatController::index');
 });
 
 // Route Group untuk Pelanggan (User)

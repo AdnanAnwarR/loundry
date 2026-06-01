@@ -21,7 +21,7 @@ class CreateLayananTable extends Migration
             ],
             'harga' => [
                 'type'       => 'DECIMAL',
-                'constraint' => '10,2',
+                'constraint' => '15,2',
             ],
             'durasi' => [
                 'type'       => 'INT',

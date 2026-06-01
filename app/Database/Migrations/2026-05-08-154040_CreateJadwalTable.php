@@ -19,8 +19,7 @@ class CreateJadwalTable extends Migration
                 'type' => 'DATE',
             ],
             'slot_waktu' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '255',
+                'type' => 'TIME',
             ],
             'kapasitas' => [
                 'type'       => 'INT',

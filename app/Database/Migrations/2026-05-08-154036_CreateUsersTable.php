@@ -31,14 +31,19 @@ class CreateUsersTable extends Migration
                 'unique'     => true,
             ],
             'role' => [
-                'type'       => 'ENUM',
-                'constraint' => ['pelanggan', 'staff', 'admin'],
+                'type'       => 'VARCHAR',
+                'constraint' => '20',
                 'default'    => 'pelanggan',
             ],
             'is_active' => [
                 'type'       => 'TINYINT',
                 'constraint' => 1,
                 'default'    => 1,
+            ],
+            'foto' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
             ],
             'email_verified_at' => [
                 'type' => 'TIMESTAMP',

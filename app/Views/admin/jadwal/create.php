@@ -39,14 +39,8 @@
             </div>
 
             <div class="mb-3">
-              <label for="slot_waktu" class="form-label">Slot Waktu <span class="text-danger">*</span></label>
-              <select class="form-select" id="slot_waktu" name="slot_waktu" required>
-                <option value="">-- Pilih Slot Waktu --</option>
-                <option value="08:00 - 10:00" <?= old('slot_waktu') == '08:00 - 10:00' ? 'selected' : '' ?>>08:00 - 10:00</option>
-                <option value="10:00 - 12:00" <?= old('slot_waktu') == '10:00 - 12:00' ? 'selected' : '' ?>>10:00 - 12:00</option>
-                <option value="13:00 - 15:00" <?= old('slot_waktu') == '13:00 - 15:00' ? 'selected' : '' ?>>13:00 - 15:00</option>
-                <option value="15:00 - 17:00" <?= old('slot_waktu') == '15:00 - 17:00' ? 'selected' : '' ?>>15:00 - 17:00</option>
-              </select>
+              <label for="slot_waktu" class="form-label">Slot Waktu (Jam) <span class="text-danger">*</span></label>
+              <input type="time" class="form-control" id="slot_waktu" name="slot_waktu" value="<?= old('slot_waktu') ?>" required>
             </div>
 
             <div class="mb-4">

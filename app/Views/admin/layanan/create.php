@@ -58,14 +58,7 @@
                         placeholder="Jelaskan detail layanan ini..."><?= old('deskripsi') ?></textarea>
             </div>
 
-            <div class="mb-4">
-              <label for="foto" class="form-label">Foto Layanan</label>
-              <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-              <small class="text-muted">Format: JPG, PNG, GIF. Maks: 2MB</small>
-              <div id="preview-container" class="mt-2 d-none">
-                <img id="foto-preview" src="#" alt="Preview" class="img-thumbnail" style="max-height:200px;">
-              </div>
-            </div>
+
 
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary">
@@ -83,18 +76,4 @@
 </section>
 
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?>
-<script>
-  document.getElementById('foto').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        document.getElementById('foto-preview').src = ev.target.result;
-        document.getElementById('preview-container').classList.remove('d-none');
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-</script>
-<?= $this->endSection() ?>
+

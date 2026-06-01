@@ -20,7 +20,19 @@ Riwayat Pekerjaan Laundry
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Riwayat Semua Pekerjaan Saya</h5>
-            <div class="d-flex mb-2">
+            <div class="mb-4">
+                <form method="get" action="<?= base_url('staff/riwayat-pekerjaan') ?>" class="row g-3 align-items-center">
+                    <div class="col-md-4 col-sm-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Filter Tanggal</label>
+                        <input type="date" name="date" class="form-control form-control-sm" value="<?= esc($tanggal) ?>">
+                    </div>
+                    <div class="col-md-4 col-sm-6 d-flex align-items-end gap-2" style="margin-top: 32px;">
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                        <a href="<?= base_url('staff/riwayat-pekerjaan') ?>" class="btn btn-secondary btn-sm fw-bold">Reset</a>
+                    </div>
+                </form>
             </div>
             <table class="table table-bordered table-striped">
                 <thead class="table-primary">
@@ -42,7 +54,7 @@ Riwayat Pekerjaan Laundry
                                 <td><?= esc($item->pelanggan) ?></td>
                                 <td><?= esc($item->layanan) ?></td>
                                 <td><?= esc($item->tanggal) ?></td>
-                                <td>-</td>
+                                <td><?= esc(date('H:i', strtotime($item->slot_waktu))) /* Menampilkan jam slot waktu booking */ ?> WIB</td>
                                 <td><?= status_badge($item->status) ?></td>
                                 <td><?= esc($item->rating ?? '-') ?></td>
                             </tr>

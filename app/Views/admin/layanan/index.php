@@ -33,11 +33,11 @@
             </div>
           <?php endif; ?>
 
-          <table class="table table-hover datatable">
+          <table class="table table-hover">
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Foto</th>
+
                 <th>Nama Layanan</th>
                 <th>Harga</th>
                 <th>Durasi</th>
@@ -49,22 +49,14 @@
               <?php foreach ($layanan as $i => $l): ?>
               <tr>
                 <td><?= $i + 1 ?></td>
-                <td>
-                  <?php if ($l->foto): ?>
-                    <img src="<?= base_url('uploads/layanan/' . $l->foto) ?>" alt="<?= esc($l->nama_layanan) ?>" class="rounded" style="width:60px;height:45px;object-fit:cover;">
-                  <?php else: ?>
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:60px;height:45px;">
-                      <i class="bi bi-image text-muted"></i>
-                    </div>
-                  <?php endif; ?>
-                </td>
+
                 <td>
                   <strong><?= esc($l->nama_layanan) ?></strong>
                   <?php if ($l->deskripsi): ?>
                     <br><small class="text-muted"><?= esc(substr($l->deskripsi, 0, 60)) ?>...</small>
                   <?php endif; ?>
                 </td>
-                <td>Rp <?= number_format($l->harga, 0, ',', '.') ?></td>
+                <td>Rp <?= number_format($l->harga, 0, ',', '.') ?> / kg</td>
                 <td><?= $l->durasi ?> menit</td>
                 <td>
                   <?php if ($l->is_active): ?>
@@ -97,15 +89,15 @@
               <?php endif; ?>
             </tbody>
           </table>
+
+          <!-- Tautan Paginasi Server-side Terpaginasi 10 data -->
+          <div class="mt-3">
+            <?= $pager->links() ?>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<?= $this->endSection() ?>
-<?= $this->section('scripts') ?>
-<script>
-  const dataTable = new simpleDatatables.DataTable(".datatable");
-</script>
 <?= $this->endSection() ?>

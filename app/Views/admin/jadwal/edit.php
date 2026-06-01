@@ -39,14 +39,9 @@
             </div>
 
             <div class="mb-3">
-              <label for="slot_waktu" class="form-label">Slot Waktu <span class="text-danger">*</span></label>
-              <select class="form-select" id="slot_waktu" name="slot_waktu" required>
-                <option value="">-- Pilih Slot Waktu --</option>
-                <?php $slots = ['08:00 - 10:00', '10:00 - 12:00', '13:00 - 15:00', '15:00 - 17:00']; ?>
-                <?php foreach ($slots as $slot): ?>
-                  <option value="<?= $slot ?>" <?= old('slot_waktu', $jadwal->slot_waktu) == $slot ? 'selected' : '' ?>><?= $slot ?></option>
-                <?php endforeach; ?>
-              </select>
+              <label for="slot_waktu" class="form-label">Slot Waktu (Jam) <span class="text-danger">*</span></label>
+              <input type="time" class="form-control" id="slot_waktu" name="slot_waktu" 
+                     value="<?= old('slot_waktu', date('H:i', strtotime($jadwal->slot_waktu))) ?>" required>
             </div>
 
             <div class="mb-3">

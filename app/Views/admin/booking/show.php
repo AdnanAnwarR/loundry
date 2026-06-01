@@ -39,8 +39,29 @@
           </div>
           <hr>
           <div class="row mb-3">
-            <div class="col-sm-4 fw-semibold text-muted">Layanan</div>
-            <div class="col-sm-8"><?= esc($booking->nama_layanan) ?></div>
+            <div class="col-sm-4 fw-semibold text-muted">Daftar Layanan</div>
+            <div class="col-sm-8">
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0 align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nama Layanan</th>
+                      <th>Harga / kg</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($items as $item): ?>
+                      <tr>
+                        <td><span class="fw-bold text-dark"><?= esc($item->nama_layanan) ?></span></td>
+                        <td>Rp <?= number_format($item->harga, 0, ',', '.') ?></td>
+                        <td class="fw-bold text-dark">Rp <?= number_format($item->total_harga, 0, ',', '.') ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
           <div class="row mb-3">
             <div class="col-sm-4 fw-semibold text-muted">Tanggal</div>
@@ -56,8 +77,8 @@
           </div>
           <hr>
           <div class="row mb-3">
-            <div class="col-sm-4 fw-semibold text-muted">Total Harga</div>
-            <div class="col-sm-8"><strong>Rp <?= number_format($booking->total_harga, 0, ',', '.') ?></strong></div>
+            <div class="col-sm-4 fw-semibold text-muted">Total Harga Pesanan</div>
+            <div class="col-sm-8"><strong class="fs-5 text-primary">Rp <?= number_format($grandTotal, 0, ',', '.') ?></strong></div>
           </div>
           <div class="row mb-3">
             <div class="col-sm-4 fw-semibold text-muted">Status Booking</div>

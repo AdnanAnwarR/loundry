@@ -22,6 +22,7 @@ class UserModel extends Model
         'no_hp',
         'role',
         'is_active',
+        'foto',
         'password',
         'email_verified_at',
         'remember_token'

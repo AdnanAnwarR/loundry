@@ -12,17 +12,16 @@ class StaffRiwayatController extends BaseController
     {
         $staffId = session()->get('id');
 
-        $tanggal = $this->request->getGet('date') ?? date('Y-m-d');
+        $tanggal = $this->request->getGet('date') ?: null;
 
         $pesananModel = new PesananModel();
 
-        $query = $pesananModel->getTugasRiwayatStaff($staffId, $tanggal);
-
         $data['tanggal'] = $tanggal;
 
-        $data['tugasRiwayat'] = $query
-            ->paginate(5, 'default', null, 0);
+        // Mengambil daftar riwayat tugas staff terpaginasi langsung dari method model
+        $data['tugasRiwayat'] = $pesananModel->getTugasRiwayatStaff($staffId, $tanggal);
 
+        // Mengirimkan objek pager untuk tautan paginasi ke view
         $data['pager'] = $pesananModel->pager;
 
         return view('staff/riwayat', $data);

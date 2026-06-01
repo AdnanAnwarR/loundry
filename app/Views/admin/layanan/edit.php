@@ -64,18 +64,6 @@
               </select>
             </div>
 
-            <div class="mb-4">
-              <label for="foto" class="form-label">Foto Layanan</label>
-              <?php if ($layanan->foto): ?>
-                <div class="mb-2">
-                  <img src="<?= base_url('uploads/layanan/' . $layanan->foto) ?>" alt="Foto" class="img-thumbnail" style="max-height:150px;">
-                  <small class="text-muted d-block">Foto saat ini. Upload baru untuk mengganti.</small>
-                </div>
-              <?php endif; ?>
-              <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-              <small class="text-muted">Format: JPG, PNG, GIF. Maks: 2MB</small>
-            </div>
-
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-lg me-1"></i> Simpan Perubahan

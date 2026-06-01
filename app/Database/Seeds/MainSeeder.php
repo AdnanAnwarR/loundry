@@ -89,10 +89,10 @@ class MainSeeder extends Seeder
         $lusa = date('Y-m-d', strtotime('+2 days'));
 
         $jadwal = [
-            ['tanggal' => $besok, 'slot_waktu' => 'Pagi (08:00 - 12:00)', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['tanggal' => $besok, 'slot_waktu' => 'Siang (13:00 - 17:00)', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['tanggal' => $lusa,  'slot_waktu' => 'Pagi (08:00 - 12:00)', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['tanggal' => $lusa,  'slot_waktu' => 'Siang (13:00 - 17:00)', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['tanggal' => $besok, 'slot_waktu' => '08:00:00', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['tanggal' => $besok, 'slot_waktu' => '13:00:00', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['tanggal' => $lusa,  'slot_waktu' => '08:00:00', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['tanggal' => $lusa,  'slot_waktu' => '13:00:00', 'kapasitas' => 10, 'terisi' => 0, 'created_at' => $now, 'updated_at' => $now],
         ];
 
         // Eksekusi Insert ke Database

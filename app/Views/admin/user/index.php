@@ -18,7 +18,7 @@
         <div class="card-body">
           <h5 class="card-title mt-3">Daftar Pelanggan Terdaftar</h5>
 
-          <table class="table table-hover datatable">
+          <table class="table table-hover">
             <thead class="table-light">
               <tr>
                 <th>#</th>
@@ -77,15 +77,15 @@
               <?php endif; ?>
             </tbody>
           </table>
+
+          <!-- Tautan Paginasi Server-side Terpaginasi 10 data -->
+          <div class="mt-3">
+            <?= $pager->links() ?>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<?= $this->endSection() ?>
-<?= $this->section('scripts') ?>
-<script>
-  const dataTable = new simpleDatatables.DataTable(".datatable");
-</script>
 <?= $this->endSection() ?>

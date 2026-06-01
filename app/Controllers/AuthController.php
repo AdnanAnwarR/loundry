@@ -27,10 +27,11 @@ class AuthController extends BaseController
             if (password_verify($password, $user->password)) {
                 // Set session data
                 $ses_data = [
-                    'id'       => $user->id,
-                    'name'     => $user->name,
-                    'email'    => $user->email,
-                    'role'     => $user->role,
+                    'id'        => $user->id,
+                    'name'      => $user->name,
+                    'email'     => $user->email,
+                    'role'      => $user->role,
+                    'foto'      => $user->foto,
                     'logged_in' => TRUE
                 ];
                 $session->set($ses_data);

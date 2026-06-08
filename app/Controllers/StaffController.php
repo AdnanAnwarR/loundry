@@ -35,12 +35,17 @@ class StaffController extends BaseController
             ->where('status', 'selesai')
             ->countAllResults();
 
+        // Mengambil daftar tugas staff terpaginasi langsung dari method model
+        $tugasStaff = $pesananModel->getTugasHarianStaff($staffId);
+
         // Mengirimkan data statistik ke view staff dashboard
         $data = [
             'title'          => 'Dashboard Staff', // Judul halaman
             'pesananBaru'    => $pesananBaru, // Jumlah pesanan baru
             'sedangDiproses' => $sedangDiproses, // Jumlah pesanan diproses
-            'selesai'        => $selesai // Jumlah pesanan selesai
+            'selesai'        => $selesai, // Jumlah pesanan selesai
+            'tugasStaff'     => $tugasStaff, // Daftar tugas active
+            'pager'          => $pesananModel->pager // Objek pager untuk link halaman
         ];
 
         // Memuat view index dashboard staff dengan data statistik

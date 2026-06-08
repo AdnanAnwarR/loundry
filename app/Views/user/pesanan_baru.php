@@ -47,11 +47,12 @@ Buat Pesanan Laundry Baru
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="berat" class="form-label fw-bold text-secondary"><i class="bi bi-speedometer2 me-1"></i> 2. Total Berat Pakaian (Kg)</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="berat" name="berat" min="0.5" step="0.1" value="1.0" required oninput="updateEstimasiHarga();">
+                            <div class="input-group has-validation">
+                                <input type="number" class="form-control" id="berat" name="berat" min="0.5" max="100" step="0.1" value="1.0" required oninput="updateEstimasiHarga();">
                                 <span class="input-group-text">Kg</span>
+                                <div class="invalid-feedback">Berat pakaian tidak boleh melebihi 100 kg.</div>
                             </div>
-                            <small class="text-muted">Masukkan perkiraan berat pakaian Anda. Setiap layanan dihitung per kilo.</small>
+                            <small class="text-muted">Masukkan perkiraan berat pakaian Anda (Maksimal 100 Kg). Setiap layanan dihitung per kilo.</small>
                         </div>
 
                         <!-- Step 3: Waktu Booking -->
@@ -135,6 +136,16 @@ Buat Pesanan Laundry Baru
         const checkboxes = document.querySelectorAll('.service-checkbox');
         const beratInput = document.getElementById('berat');
         const berat = parseFloat(beratInput.value) || 0;
+        const submitBtn = document.querySelector('button[type="submit"]');
+        
+        // Validasi berat pakaian maks 100 kg
+        if (berat > 100) {
+            beratInput.classList.add('is-invalid');
+            if (submitBtn) submitBtn.disabled = true;
+        } else {
+            beratInput.classList.remove('is-invalid');
+            if (submitBtn) submitBtn.disabled = false;
+        }
         
         let total = 0;
         let detailHtml = '<ul class="list-group list-group-flush bg-transparent">';

@@ -104,12 +104,16 @@
               </span>
             </div>
           </div>
-          <?php if ($booking->nama_staff): ?>
           <div class="row mb-3">
             <div class="col-sm-4 fw-semibold text-muted">Staff Ditugaskan</div>
-            <div class="col-sm-8"><span class="badge bg-info"><?= esc($booking->nama_staff) ?></span></div>
+            <div class="col-sm-8">
+              <?php if ($booking->nama_staff): ?>
+                <span class="badge bg-info"><?= esc($booking->nama_staff) ?></span>
+              <?php else: ?>
+                <span class="badge bg-light text-secondary border">Belum ditugaskan</span>
+              <?php endif; ?>
+            </div>
           </div>
-          <?php endif; ?>
           <?php if ($booking->rating): ?>
           <hr>
           <div class="row mb-3">

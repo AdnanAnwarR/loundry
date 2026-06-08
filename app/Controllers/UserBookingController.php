@@ -65,9 +65,9 @@ class UserBookingController extends BaseController
         $jadwalId   = $this->request->getPost('jadwal_id');
         $catatan    = $this->request->getPost('catatan');
 
-        // Validasi input: Harus memilih minimal satu layanan dan berat pakaian harus valid
-        if (empty($layananIds) || $berat <= 0 || !$jadwalId) {
-            return redirect()->back()->withInput()->with('error', 'Layanan, berat pakaian, dan jadwal wajib dipilih/diisi dengan benar!');
+        // Validasi input: Harus memilih minimal satu layanan, berat pakaian harus valid dan tidak melebihi 100 kg
+        if (empty($layananIds) || $berat <= 0 || $berat > 100 || !$jadwalId) {
+            return redirect()->back()->withInput()->with('error', 'Layanan, berat pakaian (maksimal 100 Kg), dan jadwal wajib dipilih/diisi dengan benar!');
         }
 
         // Ambil data jadwal dari database menggunakan Query Builder Model Jadwal

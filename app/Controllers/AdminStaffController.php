@@ -50,7 +50,7 @@ class AdminStaffController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_add_modal', true);
         }
 
         $this->userModel->save([
@@ -87,7 +87,7 @@ class AdminStaffController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_edit_id', $id);
         }
 
         $data = [

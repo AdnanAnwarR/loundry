@@ -81,6 +81,11 @@ Riwayat Pesanan
                           echo '<span class="badge bg-secondary">' . esc($booking->status_pesanan) . '</span>';
                       }
                     ?>
+                    <?php if ($booking->nama_staff): ?>
+                      <div class="mt-1">
+                        <span class="badge bg-light text-info border border-info" style="font-size: 0.75rem;"><i class="bi bi-person-badge me-1"></i>Staff: <?= esc($booking->nama_staff) ?></span>
+                      </div>
+                    <?php endif; ?>
                   </td>
                   <td>
                     <?php 

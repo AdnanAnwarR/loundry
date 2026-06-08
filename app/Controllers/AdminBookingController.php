@@ -123,6 +123,19 @@ class AdminBookingController extends BaseController
                    'updated_at' => date('Y-m-d H:i:s') // Mengubah waktu update
                ])
                ->update(); // Menjalankan perintah update pada model
+
+            // Mengupdate status pembayaran terkait menjadi gagal
+            $pembayaranModel = new \App\Models\PembayaranModel();
+            $firstItem = $this->pesananModel->where('order_id', $pesanan->order_id)->orderBy('id', 'ASC')->first();
+            if ($firstItem) {
+                $pembayaran = $pembayaranModel->where('pesanan_id', $firstItem->id)->first();
+                if ($pembayaran) {
+                    $pembayaranModel->update($pembayaran->id, [
+                        'status_pembayaran' => 'gagal',
+                        'updated_at'        => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
         }
         
         // Redirect kembali dengan notifikasi sukses penolakan

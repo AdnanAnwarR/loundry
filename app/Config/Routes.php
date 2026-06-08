@@ -48,6 +48,8 @@ $routes->group('admin', ['filter' => 'auth:admin'], static function ($routes) {
 
     // User
     $routes->get('users', 'AdminUserController::usersIndex');
+    $routes->post('users/store', 'AdminUserController::usersStore');
+    $routes->post('users/update/(:num)', 'AdminUserController::usersUpdate/$1');
     $routes->post('users/toggle/(:num)', 'AdminUserController::usersToggle/$1');
     $routes->get('users/delete/(:num)', 'AdminUserController::usersDelete/$1');
 });

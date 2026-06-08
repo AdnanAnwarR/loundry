@@ -236,10 +236,11 @@ class PesananModel extends Model
         $orderIds = array_column($paginatedOrders, 'order_id');
 
         // 2. Ambil detail pesanan lengkap beserta data relasinya untuk order_id yang didapat
-        $allPesanan = $this->select('pesanan.*, l.nama_layanan, j.tanggal, j.slot_waktu, pem.status_pembayaran')
+        $allPesanan = $this->select('pesanan.*, l.nama_layanan, j.tanggal, j.slot_waktu, pem.status_pembayaran, s.name as nama_staff')
             ->join('layanan l', 'l.id = pesanan.layanan_id')
             ->join('jadwal j', 'j.id = pesanan.jadwal_id')
             ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left')
+            ->join('users s', 's.id = pesanan.staf_id', 'left')
             ->whereIn('pesanan.order_id', $orderIds)
             ->findAll();
 
@@ -275,6 +276,7 @@ class PesananModel extends Model
             $obj->grand_total       = $grandTotal;
             $obj->status_pesanan    = $firstItem->status;
             $obj->status_pembayaran = $firstItem->status_pembayaran;
+            $obj->nama_staff        = $firstItem->nama_staff;
 
             $grouped[] = $obj;
         }
@@ -300,10 +302,11 @@ class PesananModel extends Model
         $orderIds = array_column($paginatedOrders, 'order_id');
 
         // 2. Ambil detail pesanan lengkap beserta data relasinya untuk order_id yang didapat
-        $allPesanan = $this->select('pesanan.*, l.nama_layanan, j.tanggal, j.slot_waktu, pem.status_pembayaran')
+        $allPesanan = $this->select('pesanan.*, l.nama_layanan, j.tanggal, j.slot_waktu, pem.status_pembayaran, s.name as nama_staff')
             ->join('layanan l', 'l.id = pesanan.layanan_id')
             ->join('jadwal j', 'j.id = pesanan.jadwal_id')
             ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left')
+            ->join('users s', 's.id = pesanan.staf_id', 'left')
             ->whereIn('pesanan.order_id', $orderIds)
             ->findAll();
 
@@ -339,6 +342,7 @@ class PesananModel extends Model
             $obj->grand_total       = $grandTotal;
             $obj->status_pesanan    = $firstItem->status;
             $obj->status_pembayaran = $firstItem->status_pembayaran;
+            $obj->nama_staff        = $firstItem->nama_staff;
             $obj->rating            = $firstItem->rating;
             $obj->ulasan            = $firstItem->ulasan;
 

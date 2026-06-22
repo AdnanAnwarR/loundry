@@ -27,26 +27,38 @@ class UserPembayaranController extends BaseController
         // Mengambil ID user dari session login
         $userId = session()->get('id');
 
-        // Mengambil seluruh baris pesanan dengan order_id tersebut menggunakan method model
-        $items = $this->pesananModel->getOrderItems($orderId, $userId); // Mendapatkan item pesanan terenkapsulasi
+        // Mengambil pesanan dengan order_id tersebut
+        $pesanan = $this->pesananModel
+            ->where('order_id', $orderId)
+            ->where('user_id', $userId)
+            ->first();
 
         // Jika data pesanan kosong, kembalikan ke dashboard dengan error
-        if (empty($items)) {
+        if (!$pesanan) {
             return redirect()->to('/user')->with('error', 'Pesanan tidak ditemukan.');
         }
 
-        // Mengambil informasi jadwal dari pesanan pertama menggunakan Query Builder Model Jadwal
-        $firstItem = $items[0];
-        $jadwal = $this->jadwalModel->find($firstItem->jadwal_id);
+        // Fetch detail items from detail_pesanan table
+        $detailModel = new \App\Models\DetailPesananModel();
+        $items = $detailModel
+            ->select('detail_pesanan.*, l.nama_layanan, l.harga')
+            ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+            ->where('detail_pesanan.pesanan_id', $pesanan->id)
+            ->findAll();
+
+        // Inject catatan property into items for view compatibility
+        foreach ($items as $item) {
+            $item->catatan = $pesanan->catatan;
+        }
+
+        // Mengambil informasi jadwal dari pesanan
+        $jadwal = $this->jadwalModel->find($pesanan->jadwal_id);
 
         // Mengambil informasi pembayaran terkait menggunakan Query Builder Model Pembayaran
-        $pembayaran = $this->pembayaranModel->where('pesanan_id', $firstItem->id)->first();
+        $pembayaran = $this->pembayaranModel->where('pesanan_id', $pesanan->id)->first();
 
         // Menghitung total nominal pesanan
-        $grandTotal = 0;
-        foreach ($items as $item) {
-            $grandTotal += $item->total_harga;
-        }
+        $grandTotal = $pesanan->total_harga;
 
         // Menyusun data untuk dikirim ke view
         $data = [

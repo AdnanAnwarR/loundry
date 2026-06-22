@@ -31,8 +31,40 @@ class AdminBookingController extends BaseController
         $tanggalFilter = $this->request->getGet('tanggal');
         $layananFilter = $this->request->getGet('layanan_id');
 
-        // Mengambil daftar booking pelanggan terpaginasi langsung dari method model
-        $booking = $this->pesananModel->getAllBookings($statusFilter, $tanggalFilter, $layananFilter);
+        $pesananQuery = $this->pesananModel
+            ->select('pesanan.*, u.name as nama_pelanggan, j.tanggal, j.slot_waktu, pem.status_pembayaran')
+            ->join('users u', 'u.id = pesanan.user_id')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left');
+
+        if ($statusFilter) {
+            $pesananQuery->where('pesanan.status', $statusFilter);
+        }
+
+        if ($tanggalFilter) {
+            $pesananQuery->where('j.tanggal', $tanggalFilter);
+        }
+
+        if ($layananFilter) {
+            $pesananQuery->where("pesanan.id IN (SELECT dp_sub.pesanan_id FROM detail_pesanan dp_sub WHERE dp_sub.layanan_id = " . (int)$layananFilter . ")");
+        }
+
+        $booking = $pesananQuery
+            ->orderBy('pesanan.created_at', 'DESC')
+            ->paginate(10);
+
+        // Gabungkan detail layanan untuk setiap booking
+        $detailModel = new \App\Models\DetailPesananModel();
+        foreach ($booking as $b) {
+            $items = $detailModel
+                ->select('l.nama_layanan')
+                ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+                ->where('detail_pesanan.pesanan_id', $b->id)
+                ->findAll();
+            
+            $b->nama_layanan = implode(', ', array_column($items, 'nama_layanan'));
+        }
+
         // Ambil semua layanan untuk dropdown filter
         $layanan  = $this->layananModel->findAll();
 
@@ -53,14 +85,28 @@ class AdminBookingController extends BaseController
      */
     public function bookingShow($id)
     {
-        // Ambil satu baris data pesanan berdasarkan ID beserta relasi lengkap menggunakan method model
-        $booking = $this->pesananModel->getBookingDetail($id); // Mendapatkan data pesanan utama
+        // Ambil data detail pesanan utama
+        $booking = $this->pesananModel
+            ->select('pesanan.*, u.name as nama_pelanggan, u.email, u.no_hp, j.tanggal, j.slot_waktu, s.name as nama_staff, pem.status_pembayaran, pem.metode_bayar')
+            ->join('users u', 'u.id = pesanan.user_id')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->join('users s', 's.id = pesanan.staf_id', 'left')
+            ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left')
+            ->where('pesanan.id', $id)
+            ->first();
 
         // Jika pesanan tidak ditemukan
-        if (!$booking) return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.'); // Redirect jika kosong
+        if (!$booking) {
+            return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.');
+        }
 
-        // Ambil semua item pesanan dengan order_id yang sama menggunakan method model
-        $items = $this->pesananModel->getOrderItems($booking->order_id); // Mendapatkan data item pesanan
+        // Ambil semua item pesanan dari detail_pesanan
+        $detailModel = new \App\Models\DetailPesananModel();
+        $items = $detailModel
+            ->select('detail_pesanan.*, l.nama_layanan, l.harga')
+            ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+            ->where('detail_pesanan.pesanan_id', $booking->id)
+            ->findAll();
 
         // Hitung total harga gabungan dari seluruh item layanan dalam pesanan ini
         $grandTotal = 0;
@@ -126,15 +172,12 @@ class AdminBookingController extends BaseController
 
             // Mengupdate status pembayaran terkait menjadi gagal
             $pembayaranModel = new \App\Models\PembayaranModel();
-            $firstItem = $this->pesananModel->where('order_id', $pesanan->order_id)->orderBy('id', 'ASC')->first();
-            if ($firstItem) {
-                $pembayaran = $pembayaranModel->where('pesanan_id', $firstItem->id)->first();
-                if ($pembayaran) {
-                    $pembayaranModel->update($pembayaran->id, [
-                        'status_pembayaran' => 'gagal',
-                        'updated_at'        => date('Y-m-d H:i:s')
-                    ]);
-                }
+            $pembayaran = $pembayaranModel->where('pesanan_id', $pesanan->id)->first();
+            if ($pembayaran) {
+                $pembayaranModel->update($pembayaran->id, [
+                    'status_pembayaran' => 'gagal',
+                    'updated_at'        => date('Y-m-d H:i:s')
+                ]);
             }
         }
         

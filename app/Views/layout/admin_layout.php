@@ -68,40 +68,18 @@
 
       <!-- Kelola Layanan -->
       <li class="nav-item">
-        <a class="nav-link <?= strpos(current_url(), 'admin/layanan') !== false ? '' : 'collapsed' ?>" data-bs-target="#layanan-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-bag-heart"></i><span>Kelola Layanan</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link <?= strpos(current_url(), 'admin/layanan') !== false ? '' : 'collapsed' ?>" href="<?= base_url('admin/layanan') ?>">
+          <i class="bi bi-bag-heart"></i>
+          <span>Kelola Layanan</span>
         </a>
-        <ul id="layanan-nav" class="nav-content collapse <?= strpos(current_url(), 'admin/layanan') !== false ? 'show' : '' ?>" data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="<?= base_url('admin/layanan') ?>">
-              <i class="bi bi-circle"></i><span>Daftar Layanan</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('admin/layanan/create') ?>">
-              <i class="bi bi-circle"></i><span>Tambah Layanan</span>
-            </a>
-          </li>
-        </ul>
       </li>
 
       <!-- Kelola Jadwal -->
       <li class="nav-item">
-        <a class="nav-link <?= strpos(current_url(), 'admin/jadwal') !== false ? '' : 'collapsed' ?>" data-bs-target="#jadwal-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-calendar3"></i><span>Kelola Jadwal</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link <?= strpos(current_url(), 'admin/jadwal') !== false ? '' : 'collapsed' ?>" href="<?= base_url('admin/jadwal') ?>">
+          <i class="bi bi-calendar3"></i>
+          <span>Kelola Jadwal</span>
         </a>
-        <ul id="jadwal-nav" class="nav-content collapse <?= strpos(current_url(), 'admin/jadwal') !== false ? 'show' : '' ?>" data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="<?= base_url('admin/jadwal') ?>">
-              <i class="bi bi-circle"></i><span>Daftar Jadwal</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('admin/jadwal/create') ?>">
-              <i class="bi bi-circle"></i><span>Tambah Jadwal</span>
-            </a>
-          </li>
-        </ul>
       </li>
 
       <!-- Semua Booking -->
@@ -116,21 +94,10 @@
 
       <!-- Kelola Staff -->
       <li class="nav-item">
-        <a class="nav-link <?= strpos(current_url(), 'admin/staff') !== false ? '' : 'collapsed' ?>" data-bs-target="#staff-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-person-badge"></i><span>Kelola Staff</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link <?= strpos(current_url(), 'admin/staff') !== false ? '' : 'collapsed' ?>" href="<?= base_url('admin/staff') ?>">
+          <i class="bi bi-person-badge"></i>
+          <span>Kelola Staff</span>
         </a>
-        <ul id="staff-nav" class="nav-content collapse <?= strpos(current_url(), 'admin/staff') !== false ? 'show' : '' ?>" data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="<?= base_url('admin/staff') ?>">
-              <i class="bi bi-circle"></i><span>Daftar Staff</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('admin/staff/create') ?>">
-              <i class="bi bi-circle"></i><span>Tambah Staff</span>
-            </a>
-          </li>
-        </ul>
       </li>
 
       <!-- Manajemen User -->

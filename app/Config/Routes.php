@@ -16,18 +16,14 @@ $routes->group('admin', ['filter' => 'auth:admin'], static function ($routes) {
 
     // Layanan
     $routes->get('layanan', 'AdminLayananController::layananIndex');
-    $routes->get('layanan/create', 'AdminLayananController::layananCreate');
     $routes->post('layanan/store', 'AdminLayananController::layananStore');
-    $routes->get('layanan/edit/(:num)', 'AdminLayananController::layananEdit/$1');
     $routes->post('layanan/update/(:num)', 'AdminLayananController::layananUpdate/$1');
     $routes->get('layanan/delete/(:num)', 'AdminLayananController::layananDelete/$1');
     $routes->post('layanan/toggle/(:num)', 'AdminLayananController::layananToggle/$1');
 
     // Jadwal
     $routes->get('jadwal', 'AdminJadwalController::jadwalIndex');
-    $routes->get('jadwal/create', 'AdminJadwalController::jadwalCreate');
     $routes->post('jadwal/store', 'AdminJadwalController::jadwalStore');
-    $routes->get('jadwal/edit/(:num)', 'AdminJadwalController::jadwalEdit/$1');
     $routes->post('jadwal/update/(:num)', 'AdminJadwalController::jadwalUpdate/$1');
     $routes->get('jadwal/delete/(:num)', 'AdminJadwalController::jadwalDelete/$1');
 
@@ -40,9 +36,7 @@ $routes->group('admin', ['filter' => 'auth:admin'], static function ($routes) {
 
     // Staff / Teknisi
     $routes->get('staff', 'AdminStaffController::staffIndex');
-    $routes->get('staff/create', 'AdminStaffController::staffCreate');
     $routes->post('staff/store', 'AdminStaffController::staffStore');
-    $routes->get('staff/edit/(:num)', 'AdminStaffController::staffEdit/$1');
     $routes->post('staff/update/(:num)', 'AdminStaffController::staffUpdate/$1');
     $routes->get('staff/delete/(:num)', 'AdminStaffController::staffDelete/$1');
 

@@ -30,14 +30,6 @@ class AdminJadwalController extends BaseController
     }
 
     /**
-     * Halaman tambah jadwal baru
-     */
-    public function jadwalCreate()
-    {
-        return view('admin/jadwal/create', ['title' => 'Tambah Jadwal']);
-    }
-
-    /**
      * Menyimpan data jadwal baru ke database
      */
     public function jadwalStore()
@@ -49,7 +41,7 @@ class AdminJadwalController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_add_modal', true);
         }
 
         $this->jadwalModel->save([
@@ -60,16 +52,6 @@ class AdminJadwalController extends BaseController
         ]);
 
         return redirect()->to('/admin/jadwal')->with('success', 'Jadwal berhasil ditambahkan!');
-    }
-
-    /**
-     * Halaman edit jadwal
-     */
-    public function jadwalEdit($id)
-    {
-        $jadwal = $this->jadwalModel->find($id);
-        if (!$jadwal) return redirect()->to('/admin/jadwal')->with('error', 'Jadwal tidak ditemukan.');
-        return view('admin/jadwal/edit', ['title' => 'Edit Jadwal', 'jadwal' => $jadwal]);
     }
 
     /**
@@ -84,7 +66,7 @@ class AdminJadwalController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_edit_id', $id);
         }
 
         $this->jadwalModel->update($id, [

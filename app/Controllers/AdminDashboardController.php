@@ -46,17 +46,35 @@ class AdminDashboardController extends BaseController
         // Total pelanggan aktif
         $totalPelanggan = $this->userModel->where('role', 'pelanggan')->where('is_active', 1)->countAllResults();
 
-        // Layanan terpopuler (top 5) menggunakan Query Builder bawaan Model Pesanan dengan Join layanan
-        $layananPopuler = $this->pesananModel
-            ->select('l.nama_layanan, COUNT(pesanan.id) as total_pesan') // Memilih kolom nama layanan dan menghitung jumlah pesanan
-            ->join('layanan l', 'l.id = pesanan.layanan_id') // Melakukan join dengan tabel layanan
-            ->groupBy('pesanan.layanan_id') // Mengelompokkan berdasarkan id layanan
-            ->orderBy('total_pesan', 'DESC') // Mengurutkan dari total pesan terbanyak
-            ->limit(5) // Membatasi hasil hanya 5 layanan terpopuler
-            ->findAll(); // Mengambil semua hasil sebagai array objek
+        // Layanan terpopuler (top 5) menggunakan Query Builder bawaan Model DetailPesanan dengan Join layanan
+        $detailModel = new \App\Models\DetailPesananModel();
+        $layananPopuler = $detailModel
+            ->select('l.nama_layanan, COUNT(detail_pesanan.id) as total_pesan')
+            ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+            ->groupBy('detail_pesanan.layanan_id')
+            ->orderBy('total_pesan', 'DESC')
+            ->limit(5)
+            ->findAll();
 
-        // Mengambil daftar booking terbaru (limit 10) menggunakan method query terenkapsulasi di dalam model
-        $bookingTerbaru = $this->pesananModel->getRecentBookings(10); // Mendapatkan 10 data booking terbaru
+        // Mengambil daftar booking terbaru (limit 10)
+        $bookingTerbaru = $this->pesananModel
+            ->select('pesanan.*, u.name as nama_pelanggan, j.tanggal')
+            ->join('users u', 'u.id = pesanan.user_id')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->orderBy('pesanan.created_at', 'DESC')
+            ->limit(10)
+            ->findAll();
+
+        // Gabungkan detail layanan untuk setiap booking terbaru
+        foreach ($bookingTerbaru as $booking) {
+            $items = $detailModel
+                ->select('l.nama_layanan')
+                ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+                ->where('detail_pesanan.pesanan_id', $booking->id)
+                ->findAll();
+            
+            $booking->nama_layanan = implode(', ', array_column($items, 'nama_layanan'));
+        }
 
         // Data chart pendapatan 7 hari terakhir
         $chartData = [];

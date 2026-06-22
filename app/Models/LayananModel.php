@@ -30,11 +30,11 @@ class LayananModel extends Model
     // atau menggunakan class Entity (sebagai representasi baris).
     // Tapi secara default CI4 sudah bisa menyimpan boolean 1/0 dan decimal dengan baik jika tipe datanya sesuai.
 
-    // Relasi hasMany ke pesanan
+    // Relasi hasMany ke detail_pesanan
     public function getPesanan($layananId)
     {
-        $pesananModel = new PesananModel();
-        return $pesananModel->where('layanan_id', $layananId)->findAll();
+        $detailModel = new DetailPesananModel();
+        return $detailModel->where('layanan_id', $layananId)->findAll();
     }
 
     // Pengganti scopeActive() di Laravel

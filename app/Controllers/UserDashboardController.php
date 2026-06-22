@@ -23,8 +23,30 @@ class UserDashboardController extends BaseController
         // Mengambil ID user dari data session login
         $userId = session()->get('id');
 
-        // Mengambil daftar booking pelanggan terpaginasi langsung dari method model
-        $bookings = $this->pesananModel->getBookingsByUser($userId);
+        // Mengambil daftar booking pelanggan terpaginasi (1 row per order)
+        $bookings = $this->pesananModel
+            ->select('pesanan.*, j.tanggal, j.slot_waktu, pem.status_pembayaran, s.name as nama_staff')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left')
+            ->join('users s', 's.id = pesanan.staf_id', 'left')
+            ->where('pesanan.user_id', $userId)
+            ->whereNotIn('pesanan.status', ['selesai', 'dibatalkan', 'ditolak'])
+            ->orderBy('pesanan.created_at', 'DESC')
+            ->paginate(10);
+
+        // Gabungkan detail layanan untuk setiap booking
+        $detailModel = new \App\Models\DetailPesananModel();
+        foreach ($bookings as $booking) {
+            $items = $detailModel
+                ->select('l.nama_layanan')
+                ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+                ->where('detail_pesanan.pesanan_id', $booking->id)
+                ->findAll();
+            
+            $booking->layanan_list = implode(', ', array_column($items, 'nama_layanan'));
+            $booking->grand_total   = $booking->total_harga;
+            $booking->status_pesanan = $booking->status;
+        }
 
         // Menggunakan Query Builder dari Model Pesanan untuk menghitung pengeluaran bulanan yang sudah lunas dibayar
         $totalPengeluaran = $this->pesananModel

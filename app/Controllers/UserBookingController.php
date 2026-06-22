@@ -83,45 +83,48 @@ class UserBookingController extends BaseController
         $db = $this->pesananModel->db;
         $db->transStart();
 
-        // Variabel penampung ID pesanan pertama untuk dikaitkan ke tabel pembayaran
-        $firstPesananId = null;
-
         // Menyimpan catatan awal dengan menyisipkan informasi berat pakaian ke dalamnya
         $catatanFormat = "[Berat: {$berat} kg] " . $catatan;
 
-        // Loop untuk menyimpan setiap layanan yang dipilih pelanggan sebagai item pesanan
-        foreach ($layananIds as $index => $layananId) {
-            // Mengambil detail layanan untuk mendapatkan harga per kilo
+        // Hitung total harga seluruh layanan yang dipilih
+        $grandTotal = 0;
+        $itemsToInsert = [];
+        foreach ($layananIds as $layananId) {
             $layanan = $this->layananModel->find($layananId);
             if (!$layanan) continue;
 
-            // Hitung harga total untuk item layanan ini (harga_layanan * berat total pakaian)
             $totalHargaItem = $layanan->harga * $berat;
-
-            // Array data pesanan
-            $dataPesanan = [
-                'user_id'     => $userId, // ID Pelanggan
-                'layanan_id'  => $layananId, // ID Layanan
-                'jadwal_id'   => $jadwalId, // ID Jadwal booking
-                'staf_id'     => null, // Staff dikosongkan dahulu sebelum di-assign admin
-                'order_id'    => $orderId, // Kode order unik pemesanan
-                'total_harga' => $totalHargaItem, // Total harga item layanan
-                'catatan'     => $catatanFormat, // Catatan beserta info berat pakaian
-                'status'      => 'pending', // Status awal booking laundry adalah pending
+            $grandTotal += $totalHargaItem;
+            $itemsToInsert[] = [
+                'layanan_id'  => $layananId,
+                'total_harga' => $totalHargaItem,
             ];
+        }
 
-            // Menyimpan baris pesanan menggunakan Query Builder bawaan Model Pesanan
-            $this->pesananModel->insert($dataPesanan);
-            
-            // Menyimpan ID pesanan pertama untuk relasi tabel pembayaran
-            if ($index === 0) {
-                $firstPesananId = $this->pesananModel->getInsertID();
-            }
+        // Simpan ke tabel pesanan (order header)
+        $dataPesanan = [
+            'user_id'     => $userId, // ID Pelanggan
+            'jadwal_id'   => $jadwalId, // ID Jadwal booking
+            'staf_id'     => null, // Staff dikosongkan dahulu sebelum di-assign admin
+            'order_id'    => $orderId, // Kode order unik pemesanan
+            'total_harga' => $grandTotal, // Total harga gabungan
+            'catatan'     => $catatanFormat, // Catatan beserta info berat pakaian
+            'status'      => 'pending', // Status awal booking laundry adalah pending
+        ];
+
+        $this->pesananModel->insert($dataPesanan);
+        $pesananId = $this->pesananModel->getInsertID();
+
+        // Simpan item layanan ke detail_pesanan
+        $detailPesananModel = new \App\Models\DetailPesananModel();
+        foreach ($itemsToInsert as $item) {
+            $item['pesanan_id'] = $pesananId;
+            $detailPesananModel->insert($item);
         }
 
         // Membuat data pembayaran awal untuk transaksi order ini
         $dataPembayaran = [
-            'pesanan_id'        => $firstPesananId, // Mengaitkan ke ID pesanan pertama
+            'pesanan_id'        => $pesananId, // Mengaitkan ke ID pesanan
             'metode_bayar'      => null, // Belum ditentukan metode bayar
             'snap_token'        => 'SNAP-' . rand(100000, 999999), // Mock Snap Token untuk simulator
             'status_pembayaran' => 'belum_dibayar', // Status awal pembayaran belum dibayar
@@ -151,21 +154,18 @@ class UserBookingController extends BaseController
         // Mengambil ID user dari session
         $userId = session()->get('id');
 
-        // Mengambil seluruh baris pesanan terkait menggunakan Query Builder Model Pesanan
-        $pesananItems = $this->pesananModel
+        // Mengambil pesanan terkait menggunakan Query Builder Model Pesanan
+        $pesanan = $this->pesananModel
             ->where('order_id', $orderId)
             ->where('user_id', $userId)
-            ->findAll();
+            ->first();
 
-        if (empty($pesananItems)) {
+        if (!$pesanan) {
             return redirect()->to('/user')->with('error', 'Pesanan tidak ditemukan.');
         }
 
-        // Mengambil pesanan pertama
-        $firstPesanan = $pesananItems[0];
-
         // Mengambil data pembayaran terkait menggunakan Query Builder Model Pembayaran
-        $pembayaran = $this->pembayaranModel->where('pesanan_id', $firstPesanan->id)->first();
+        $pembayaran = $this->pembayaranModel->where('pesanan_id', $pesanan->id)->first();
 
         // Proteksi: Jika status pembayaran sudah_dibayar, maka pesanan TIDAK BISA dibatalkan
         if ($pembayaran && $pembayaran->status_pembayaran === 'sudah_dibayar') {
@@ -177,12 +177,10 @@ class UserBookingController extends BaseController
         $db->transStart();
 
         // Update status di tabel pesanan menjadi 'dibatalkan' menggunakan Query Builder Model Pesanan
-        $this->pesananModel->where('order_id', $orderId)
-            ->set([
-                'status'     => 'dibatalkan',
-                'updated_at' => date('Y-m-d H:i:s')
-            ])
-            ->update();
+        $this->pesananModel->update($pesanan->id, [
+            'status'     => 'dibatalkan',
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
 
         // Mengupdate status pembayaran di tabel pembayaran menggunakan Query Builder Model Pembayaran
         if ($pembayaran) {
@@ -193,7 +191,7 @@ class UserBookingController extends BaseController
         }
 
         // Mengurangi counter jumlah terisi pada jadwal slot waktu tersebut (memulihkan kapasitas) menggunakan Model Jadwal
-        $this->jadwalModel->where('id', $firstPesanan->jadwal_id)->decrement('terisi', 1);
+        $this->jadwalModel->where('id', $pesanan->jadwal_id)->decrement('terisi', 1);
 
         // Menyelesaikan transaksi database
         $db->transComplete();

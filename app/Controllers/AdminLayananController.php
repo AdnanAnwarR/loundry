@@ -30,14 +30,6 @@ class AdminLayananController extends BaseController
     }
 
     /**
-     * Halaman tambah layanan baru
-     */
-    public function layananCreate()
-    {
-        return view('admin/layanan/create', ['title' => 'Tambah Layanan']);
-    }
-
-    /**
      * Menyimpan data layanan baru ke database
      */
     public function layananStore()
@@ -50,7 +42,7 @@ class AdminLayananController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_add_modal', true);
         }
 
         $this->layananModel->save([
@@ -63,16 +55,6 @@ class AdminLayananController extends BaseController
         ]);
 
         return redirect()->to('/admin/layanan')->with('success', 'Layanan berhasil ditambahkan!');
-    }
-
-    /**
-     * Halaman edit layanan
-     */
-    public function layananEdit($id)
-    {
-        $layanan = $this->layananModel->find($id);
-        if (!$layanan) return redirect()->to('/admin/layanan')->with('error', 'Layanan tidak ditemukan.');
-        return view('admin/layanan/edit', ['title' => 'Edit Layanan', 'layanan' => $layanan]);
     }
 
     /**
@@ -90,7 +72,7 @@ class AdminLayananController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())->with('open_edit_id', $id);
         }
 
         $data = [

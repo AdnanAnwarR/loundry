@@ -30,14 +30,6 @@ class AdminStaffController extends BaseController
     }
 
     /**
-     * Halaman tambah staff baru
-     */
-    public function staffCreate()
-    {
-        return view('admin/staff/create', ['title' => 'Tambah Staff']);
-    }
-
-    /**
      * Menyimpan data staff baru ke database
      */
     public function staffStore()
@@ -63,16 +55,6 @@ class AdminStaffController extends BaseController
         ]);
 
         return redirect()->to('/admin/staff')->with('success', 'Staff berhasil ditambahkan!');
-    }
-
-    /**
-     * Halaman edit data staff
-     */
-    public function staffEdit($id)
-    {
-        $staff = $this->userModel->find($id);
-        if (!$staff || $staff->role !== 'staff') return redirect()->to('/admin/staff')->with('error', 'Staff tidak ditemukan.');
-        return view('admin/staff/edit', ['title' => 'Edit Staff', 'staff' => $staff]);
     }
 
     /**

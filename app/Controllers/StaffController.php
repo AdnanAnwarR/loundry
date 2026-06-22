@@ -35,8 +35,31 @@ class StaffController extends BaseController
             ->where('status', 'selesai')
             ->countAllResults();
 
-        // Mengambil daftar tugas staff terpaginasi langsung dari method model
-        $tugasStaff = $pesananModel->getTugasHarianStaff($staffId);
+        // Mengambil daftar tugas staff terpaginasi (1 row per order)
+        $tugasStaff = $pesananModel
+            ->select('pesanan.*, j.tanggal, j.slot_waktu, u.name as nama_pelanggan, u.no_hp')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->join('users u', 'u.id = pesanan.user_id')
+            ->where('pesanan.staf_id', $staffId)
+            ->orderBy('j.tanggal', 'ASC')
+            ->orderBy('j.slot_waktu', 'ASC')
+            ->paginate(10);
+
+        // Gabungkan detail layanan untuk setiap tugas
+        $detailModel = new \App\Models\DetailPesananModel();
+        foreach ($tugasStaff as $tugas) {
+            $items = $detailModel
+                ->select('l.nama_layanan')
+                ->join('layanan l', 'l.id = detail_pesanan.layanan_id')
+                ->where('detail_pesanan.pesanan_id', $tugas->id)
+                ->findAll();
+            
+            $tugas->tanggal_booking = $tugas->tanggal;
+            $tugas->jam             = $tugas->slot_waktu;
+            $tugas->tugas           = implode(', ', array_column($items, 'nama_layanan'));
+            $tugas->no_hp_pelanggan = $tugas->no_hp;
+            $tugas->catatan_pesanan = $tugas->catatan;
+        }
 
         // Mengirimkan data statistik ke view staff dashboard
         $data = [

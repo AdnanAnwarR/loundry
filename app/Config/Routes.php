@@ -86,6 +86,9 @@ $routes->get('/register', 'AuthController::register', ['filter' => 'guest']);
 $routes->post('/register/process', 'AuthController::processRegister', ['filter' => 'guest']);
 $routes->get('/logout', 'AuthController::logout');
 
+// Webhook Midtrans Notification (Public API callback)
+$routes->post('midtrans/notification', 'UserPembayaranController::midtransNotification');
+
 // Route untuk manajemen edit profil user, staff, dan admin
 $routes->get('/profile', 'ProfileController::index', ['filter' => 'auth']);
 $routes->post('/profile/update', 'ProfileController::update', ['filter' => 'auth']);

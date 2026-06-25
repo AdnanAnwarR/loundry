@@ -48,9 +48,14 @@
                 </tr>
               </thead>
               <tbody>
-                <?php foreach ($layanan as $i => $l): ?>
+                <?php 
+                  $currentPage = $pager->getCurrentPage();
+                  $perPage = 10;
+                  $startNumber = ($currentPage - 1) * $perPage;
+                  foreach ($layanan as $i => $l): 
+                ?>
                 <tr>
-                  <td><?= $i + 1 ?></td>
+                  <td><?= $startNumber + $i + 1 ?></td>
                   <td>
                     <span class="text-dark fw-semibold"><?= esc($l->nama_layanan) ?></span>
                     <?php if ($l->deskripsi): ?>

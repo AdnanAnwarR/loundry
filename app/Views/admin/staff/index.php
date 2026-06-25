@@ -49,9 +49,14 @@
                 </tr>
               </thead>
               <tbody>
-                <?php foreach ($staff as $i => $s): ?>
+                <?php 
+                  $currentPage = $pager->getCurrentPage();
+                  $perPage = 10;
+                  $startNumber = ($currentPage - 1) * $perPage;
+                  foreach ($staff as $i => $s): 
+                ?>
                 <tr>
-                  <td><?= $i + 1 ?></td>
+                  <td><?= $startNumber + $i + 1 ?></td>
                   <td>
                     <div class="d-flex align-items-center">
                       <div class="avatar rounded-circle bg-primary-light text-primary d-flex align-items-center justify-content-center me-2 fw-bold"

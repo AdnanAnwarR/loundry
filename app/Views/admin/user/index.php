@@ -50,9 +50,14 @@
                 </tr>
               </thead>
               <tbody>
-                <?php foreach ($users as $i => $u): ?>
+                <?php 
+                  $currentPage = $pager->getCurrentPage();
+                  $perPage = 10;
+                  $startNumber = ($currentPage - 1) * $perPage;
+                  foreach ($users as $i => $u): 
+                ?>
                 <tr>
-                  <td><?= $i + 1 ?></td>
+                  <td><?= $startNumber + $i + 1 ?></td>
                   <td>
                     <div class="d-flex align-items-center">
                       <div class="rounded-circle bg-warning-light text-warning d-flex align-items-center justify-content-center me-2 fw-bold"

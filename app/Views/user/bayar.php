@@ -70,29 +70,65 @@ Pembayaran Pesanan
                     </div>
                 </div>
 
-                <!-- Form Konfirmasi Metode Pembayaran -->
-                <form action="<?= base_url('user/pesanan/proses-bayar/' . $orderId) ?>" method="post">
-                    <?= csrf_field() ?>
-
-                    <div class="mb-4">
-                        <label for="metode_bayar" class="form-label fw-bold text-secondary">Pilih Metode Pembayaran</label>
-                        <select class="form-select form-select-lg border-primary" id="metode_bayar" name="metode_bayar" required>
-                            <option value="Transfer Bank BCA">Transfer Bank (BCA) - Virtual Account</option>
-                            <option value="Transfer Bank Mandiri">Transfer Bank (Mandiri) - Virtual Account</option>
-                            <option value="QRIS / E-Wallet">QRIS (Gopay, OVO, Dana, LinkAja)</option>
-                            <option value="Tunai di Toko">Bayar Tunai di Counter Laundry</option>
-                        </select>
+                <!-- Form Konfirmasi Metode Pembayaran / Midtrans Snap -->
+                <?php if (strpos($pembayaran->snap_token, 'SNAP-') === 0): ?>
+                    <!-- Fallback Form Pembayaran Manual / Simulator -->
+                    <div class="alert alert-info border-info-subtle mb-4 bg-light text-dark p-3 rounded">
+                        <i class="bi bi-info-circle-fill me-2 text-info"></i> Kredensial Midtrans belum dikonfigurasi atau dinonaktifkan. Menggunakan mode Simulasi Pembayaran Manual.
                     </div>
-
-                    <!-- Tombol Aksi -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="<?= base_url('user') ?>" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
-                        <button type="submit" class="btn btn-success btn-lg px-4 fw-bold shadow-sm"><i class="bi bi-credit-card me-1"></i> Bayar Sekarang</button>
+                    <form action="<?= base_url('user/pesanan/proses-bayar/' . $orderId) ?>" method="post">
+                        <?= csrf_field() ?>
+                        <div class="mb-4">
+                            <label for="metode_bayar" class="form-label fw-bold text-secondary">Pilih Metode Pembayaran (Simulasi)</label>
+                            <select class="form-select form-select-lg border-primary" id="metode_bayar" name="metode_bayar" required>
+                                <option value="Transfer Bank BCA">Transfer Bank (BCA) - Virtual Account</option>
+                                <option value="Transfer Bank Mandiri">Transfer Bank (Mandiri) - Virtual Account</option>
+                                <option value="QRIS / E-Wallet">QRIS (Gopay, OVO, Dana, LinkAja)</option>
+                                <option value="Tunai di Toko">Bayar Tunai di Counter Laundry</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="<?= base_url('user') ?>" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                            <button type="submit" class="btn btn-success btn-lg px-4 fw-bold shadow-sm"><i class="bi bi-credit-card me-1"></i> Bayar Sekarang</button>
+                        </div>
+                    </form>
+                <?php else: ?>
+                    <!-- Pembayaran Resmi Menggunakan Midtrans Snap -->
+                    <div class="text-center py-3 mb-4 bg-light border rounded">
+                        <p class="text-dark fw-medium mb-3"><i class="bi bi-shield-check text-success me-1"></i> Keamanan pembayaran dijamin penuh oleh Midtrans.</p>
+                        <div class="d-flex justify-content-between align-items-center px-3">
+                            <a href="<?= base_url('user') ?>" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                            <button type="button" id="pay-button" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm"><i class="bi bi-credit-card-2-front me-2"></i> Bayar Sekarang</button>
+                        </div>
                     </div>
-
-                </form>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<?php if (isset($pembayaran) && strpos($pembayaran->snap_token, 'SNAP-') !== 0): ?>
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="<?= $clientKey ?>"></script>
+    <script type="text/javascript">
+        document.getElementById('pay-button').onclick = function(){
+            // Trigger snap popup
+            snap.pay('<?= $pembayaran->snap_token ?>', {
+                onSuccess: function(result){
+                    window.location.href = "<?= base_url('user/pesanan/proses-bayar/' . $orderId) ?>?status=success&result=" + encodeURIComponent(JSON.stringify(result));
+                },
+                onPending: function(result){
+                    window.location.href = "<?= base_url('user/pesanan/proses-bayar/' . $orderId) ?>?status=pending&result=" + encodeURIComponent(JSON.stringify(result));
+                },
+                onError: function(result){
+                    alert("Pembayaran gagal! Silakan coba beberapa saat lagi.");
+                },
+                onClose: function(){
+                    alert('Anda menutup popup pembayaran sebelum menyelesaikan transaksi.');
+                }
+            });
+        };
+    </script>
+<?php endif; ?>
 <?= $this->endSection() ?>

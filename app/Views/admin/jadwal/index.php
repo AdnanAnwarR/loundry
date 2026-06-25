@@ -50,10 +50,15 @@
                 </tr>
               </thead>
               <tbody>
-                <?php foreach ($jadwal as $i => $j): ?>
+                <?php 
+                  $currentPage = $pager->getCurrentPage();
+                  $perPage = 10;
+                  $startNumber = ($currentPage - 1) * $perPage;
+                  foreach ($jadwal as $i => $j): 
+                ?>
                 <?php $sisa = $j->kapasitas - $j->terisi; ?>
                 <tr>
-                  <td><?= $i + 1 ?></td>
+                  <td><?= $startNumber + $i + 1 ?></td>
                   <td>
                     <span class="text-dark fw-semibold"><?= date('d M Y', strtotime($j->tanggal)) ?></span><br>
                     <small class="text-muted"><?= date('l', strtotime($j->tanggal)) ?></small>

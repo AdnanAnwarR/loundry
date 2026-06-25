@@ -116,9 +116,14 @@ Dashboard Staff
             </thead>
             <tbody>
               <?php if (!empty($tugasStaff)) : ?>
-                <?php foreach ($tugasStaff as $key => $item) : ?>
+                <?php 
+                   $currentPage = $pager->getCurrentPage();
+                   $perPage = 10;
+                   $startNumber = ($currentPage - 1) * $perPage;
+                   foreach ($tugasStaff as $key => $item) : 
+                ?>
                   <tr>
-                    <td><?= $key + 1 ?></td>
+                    <td><?= $startNumber + $key + 1 ?></td>
                     <td><span class="badge bg-secondary py-2 px-2"><?= esc($item->order_id) ?></span></td>
                     <td>
                       <?php

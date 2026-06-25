@@ -48,9 +48,14 @@ Riwayat Pekerjaan Laundry
                 </thead>
                 <tbody>
                     <?php if (!empty($tugasRiwayat)) : ?>
-                        <?php foreach ($tugasRiwayat as $key => $item) : ?>
+                        <?php 
+                          $currentPage = $pager->getCurrentPage();
+                          $perPage = 10;
+                          $startNumber = ($currentPage - 1) * $perPage;
+                          foreach ($tugasRiwayat as $key => $item) : 
+                        ?>
                             <tr>
-                                <td><?= $key + 1 ?></td>
+                                <td><?= $startNumber + $key + 1 ?></td>
                                 <td><?= esc($item->pelanggan) ?></td>
                                 <td><?= esc($item->layanan) ?></td>
                                 <td><?= esc($item->tanggal) ?></td>

@@ -70,6 +70,7 @@ $routes->group('user', ['filter' => 'auth:pelanggan'], static function ($routes)
     // Halaman pembayaran pesanan
     $routes->get('pesanan/bayar/(:any)', 'UserPembayaranController::pesananBayar/$1');
     // Proses penyelesaian pembayaran
+    $routes->get('pesanan/proses-bayar/(:any)', 'UserPembayaranController::pesananProsesBayar/$1');
     $routes->post('pesanan/proses-bayar/(:any)', 'UserPembayaranController::pesananProsesBayar/$1');
     // Batalkan booking pesanan yang belum dibayar
     $routes->post('pesanan/batal/(:any)', 'UserBookingController::pesananBatal/$1');
@@ -88,6 +89,25 @@ $routes->get('/logout', 'AuthController::logout');
 
 // Webhook Midtrans Notification (Public API callback)
 $routes->post('midtrans/notification', 'UserPembayaranController::midtransNotification');
+
+// =========================================================================
+// KRITERIA 6: Webservice Server (Expose API Endpoint / Rute REST API)
+// - Mendefinisikan endpoint RESTful untuk komunikasi data eksternal.
+// - Menghasilkan response JSON terstruktur untuk HTTP GET dan POST.
+// =========================================================================
+$routes->group('api', static function ($routes) {
+    // 1. GET /api/layanan - List of active laundry services
+    $routes->get('layanan', 'ApiLayananController::index');
+    
+    // 2. GET /api/jadwal - List of available booking schedules
+    $routes->get('jadwal', 'ApiJadwalController::index');
+    
+    // 3. GET /api/booking/(:any) - Detail status of a specific booking order
+    $routes->get('booking/(:any)', 'ApiBookingController::show/$1');
+    
+    // 4. POST /api/booking - Create a new booking transaction
+    $routes->post('booking', 'ApiBookingController::store');
+});
 
 // Route untuk manajemen edit profil user, staff, dan admin
 $routes->get('/profile', 'ProfileController::index', ['filter' => 'auth']);

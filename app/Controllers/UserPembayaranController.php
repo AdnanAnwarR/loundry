@@ -75,16 +75,26 @@ class UserPembayaranController extends BaseController
         // Menghitung total nominal pesanan
         $grandTotal = $pesanan->total_harga;
 
-        // --- PENANGANAN GENERATOR SNAP TOKEN MIDTRANS ---
+        // =========================================================================
+        // KRITERIA 5: Integrasi Webservice Client (Konsumsi API Eksternal)
+        // - Menggunakan SDK Midtrans PHP untuk mengonsumsi REST API Midtrans secara dinamis.
+        // - Caching Data: Sebelum melakukan pemanggilan API, sistem memeriksa cache token 
+        //   di database ($pembayaran->snap_token). Jika sudah ada, sistem TIDAK memanggil 
+        //   API Midtrans ulang untuk efisiensi resource & performa cepat.
+        // =========================================================================
+        // Memeriksa apakah data pembayaran valid, berstatus belum dibayar, dan belum memiliki token snap asli dari Midtrans (caching check)
         if ($pembayaran && $pembayaran->status_pembayaran === 'belum_dibayar' && (empty($pembayaran->snap_token) || strpos($pembayaran->snap_token, 'SNAP-') === 0)) {
+            // Memanggil metode inisialisasi kredensial (Client Key, Server Key) untuk koneksi ke API Midtrans
             $this->initMidtrans();
             
-            // Mengambil data pelanggan
+            // Mengambil informasi identitas pelanggan seperti nama, email, dan nomor HP dari database berdasarkan user_id pesanan
             $customer = $this->pesananModel->getPelanggan($pesanan->user_id);
             
-            // Menyusun item details untuk payload Midtrans
+            // Menginisialisasi array kosong untuk menyimpan daftar item layanan yang dipesan oleh pelanggan
             $item_details = [];
+            // Melakukan perulangan untuk memformat setiap item pesanan sesuai dengan struktur parameter yang diminta oleh Midtrans
             foreach ($items as $item) {
+                // Menambahkan detail item berupa ID layanan, total harga item (dikonversi ke integer), jumlah kuantitas (1), dan nama layanannya
                 $item_details[] = [
                     'id'       => $item->layanan_id,
                     'price'    => (int) $item->total_harga,
@@ -93,34 +103,44 @@ class UserPembayaranController extends BaseController
                 ];
             }
             
-            // Menyusun parameter request Midtrans Snap
+            // Menyusun array parameter konfigurasi transaksi lengkap untuk dikirimkan ke REST API Midtrans Snap
             $params = [
+                // Mengatur ID pesanan unik dan nominal total belanja (gross amount) untuk divalidasi oleh Midtrans
                 'transaction_details' => [
                     'order_id'     => $orderId,
                     'gross_amount' => (int) $grandTotal,
                 ],
+                // Mengatur informasi profile pembayar agar tampil pada formulir tagihan/invoice pembayaran Midtrans
                 'customer_details' => [
                     'first_name' => $customer->name,
                     'email'      => $customer->email,
                     'phone'      => $customer->no_hp,
                 ],
+                // Melampirkan daftar rincian layanan laundry yang didefinisikan sebelumnya
                 'item_details' => $item_details,
             ];
             
+            // Menggunakan struktur penanganan kesalahan try-catch agar jika server Midtrans offline, web utama tidak ikut tumbang
             try {
-                // Request token snap baru dari Midtrans
+                // =========================================================================
+                // KRITERIA 5 (Lanjutan): Panggilan API & Error Handling
+                // - Memanggil API Midtrans Snap untuk mendapatkan snap token.
+                // - Ditangani dengan blok try-catch sebagai error handling agar kegagalan 
+                //   koneksi pihak ketiga tidak merusak/meng-crash aplikasi web utama.
+                // =========================================================================
+                // Melakukan pemanggilan web service client HTTP request (API Client) ke Midtrans untuk menukarkan parameter dengan token transaksi Snap
                 $snapToken = Snap::getSnapToken($params);
                 
-                // Simpan token snap ke database
+                // Menyimpan snap token resmi yang baru didapat ke dalam database pembayaran sebagai mekanisme data caching token
                 $this->pembayaranModel->update($pembayaran->id, [
                     'snap_token' => $snapToken,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
                 
-                // Segarkan data pembayaran setelah update
+                // Mengambil ulang (refresh) data pembayaran terbaru dari database setelah token snap diperbarui
                 $pembayaran = $this->pembayaranModel->find($pembayaran->id);
             } catch (\Throwable $e) {
-                // Catat log error jika koneksi/kredensial Midtrans gagal dan gunakan fallback mock token yang sudah ada
+                // Mencatat pesan kesalahan detail koneksi API Midtrans ke dalam log sistem CodeIgniter 4 sebagai bentuk error handling
                 log_message('error', 'Gagal generate token Midtrans Snap: ' . $e->getMessage());
             }
         }

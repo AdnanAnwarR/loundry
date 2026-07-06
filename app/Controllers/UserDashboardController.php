@@ -58,12 +58,22 @@ class UserDashboardController extends BaseController
             ->where('YEAR(pesanan.created_at)', date('Y')) // Tahun saat ini
             ->first(); // Ambil satu baris hasil
 
+        // Mengambil daftar pesanan yang berstatus selesai (belum diambil / baru selesai) untuk notifikasi pelanggan
+        $completedBookings = $this->pesananModel
+            ->select('pesanan.*, j.tanggal, j.slot_waktu')
+            ->join('jadwal j', 'j.id = pesanan.jadwal_id')
+            ->where('pesanan.user_id', $userId)
+            ->where('pesanan.status', 'selesai')
+            ->orderBy('pesanan.updated_at', 'DESC')
+            ->findAll();
+
         // Menyusun data untuk dikirim ke view
         $data = [
-            'title'            => 'Dashboard Pelanggan', // Judul halaman
-            'bookings'         => $bookings, // Variabel daftar pesanan terpaginasi
-            'pager'            => $this->pesananModel->pager, // Objek pager untuk link halaman
-            'totalPengeluaran' => $totalPengeluaran->total_harga ?? 0 // Total pengeluaran (default 0 jika null)
+            'title'             => 'Dashboard Pelanggan', // Judul halaman
+            'bookings'          => $bookings, // Variabel daftar pesanan terpaginasi
+            'completedBookings' => $completedBookings, // Daftar pesanan yang selesai dicuci
+            'pager'             => $this->pesananModel->pager, // Objek pager untuk link halaman
+            'totalPengeluaran'  => $totalPengeluaran->total_harga ?? 0 // Total pengeluaran (default 0 jika null)
         ];
 
         // Memuat view index dashboard pelanggan dengan data pesanan yang riil

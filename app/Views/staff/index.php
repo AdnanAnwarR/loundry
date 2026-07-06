@@ -29,10 +29,23 @@ Dashboard Staff
         session()->remove('wa_simulation_alerts');
     ?>
     <?php foreach ($waAlerts as $alert): ?>
-        <div class="alert alert-info border-info border-start border-4 shadow-sm mb-3" role="alert">
-            <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-whatsapp me-2 text-success"></i> [SIMULASI WHATSAPP] Notifikasi Terkirim Otomatis!</h6>
-            <p class="mb-0 text-dark"><strong>Nomor HP Pelanggan:</strong> <?= esc($alert['no_hp']) ?></p>
-            <p class="mb-0 text-muted"><strong>Isi Pesan:</strong> "<?= esc($alert['message']) ?>"</p>
+        <div class="alert alert-info border-info border-start border-4 shadow-sm mb-3 d-flex justify-content-between align-items-center flex-wrap gap-3" role="alert">
+            <div>
+                <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-whatsapp me-2 text-success"></i> [WHATSAPP] Bukti / Notifikasi Siap Dikirim!</h6>
+                <p class="mb-0 text-dark"><strong>Nomor HP Pelanggan:</strong> <?= esc($alert['no_hp']) ?></p>
+                <p class="mb-0 text-muted"><strong>Isi Pesan:</strong> "<?= esc($alert['message']) ?>"</p>
+            </div>
+            <div>
+                <?php 
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $alert['no_hp']);
+                    if (strpos($cleanPhone, '0') === 0) {
+                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                    }
+                ?>
+                <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= rawurlencode($alert['message']) ?>" target="_blank" class="btn btn-success fw-bold d-flex align-items-center shadow-sm">
+                    <i class="bi bi-whatsapp me-2"></i> Kirim ke WhatsApp
+                </a>
+            </div>
         </div>
     <?php endforeach; ?>
 <?php endif; ?>

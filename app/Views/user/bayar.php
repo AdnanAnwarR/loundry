@@ -56,7 +56,7 @@ Pembayaran Pesanan
                         <div class="p-3 border rounded bg-light">
                             <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-chat-left-text me-1"></i> Catatan Pelanggan</h6>
                             <p class="mb-0 text-dark">
-                                <?= esc($items[0]->catatan ? str_replace("[Berat: ", "Berat: ", $items[0]->catatan) : '-') ?>
+                                <?= esc(!empty($items) && isset($items[0]->catatan) ? str_replace("[Berat: ", "Berat: ", $items[0]->catatan) : '-') ?>
                             </p>
                         </div>
                     </div>

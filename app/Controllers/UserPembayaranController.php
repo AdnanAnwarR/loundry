@@ -191,6 +191,7 @@ class UserPembayaranController extends BaseController
                     'status_pembayaran' => 'sudah_dibayar',
                     'updated_at'        => date('Y-m-d H:i:s')
                 ]);
+                
                 return redirect()->to('/user')->with('success', "Pembayaran untuk pesanan {$orderId} berhasil diproses! Admin akan meng-assign staff untuk segera memproses pakaian Anda.");
             } elseif ($statusGet === 'pending') {
                 $this->pembayaranModel->update($pembayaran->id, [
@@ -223,31 +224,44 @@ class UserPembayaranController extends BaseController
      */
     public function midtransNotification()
     {
+        // Memanggil fungsi inisialisasi kredensial (Server Key & Client Key) Midtrans
         $this->initMidtrans();
         
         try {
+            // Membuat objek Notification dari SDK Midtrans untuk membaca payload JSON webhook yang dikirim oleh server Midtrans
             $notif = new Notification();
             
+            // Mengambil status transaksi saat ini dari objek notifikasi Midtrans (misalnya: settlement, pending, expire)
             $transactionStatus = $notif->transaction_status;
+            // Mengambil jenis metode pembayaran yang dipilih oleh pelanggan (misalnya: bank_transfer, qris, gopay)
             $paymentType       = $notif->payment_type;
+            // Mengambil Kode Order unik transaksi laundry dari data Midtrans
             $orderId           = $notif->order_id;
+            // Mengambil status kecurangan transaksi (khusus kartu kredit) dari Midtrans
             $fraudStatus       = $notif->fraud_status;
             
-            // Cari data pesanan berdasarkan order_id
+            // Mencari baris data pesanan laundry berdasarkan Kode Order di database lokal
             $pesanan = $this->pesananModel->where('order_id', $orderId)->first();
+            // Jika pesanan tidak ditemukan di database lokal kita
             if (!$pesanan) {
+                // Mengembalikan respons error JSON terstruktur dengan HTTP Status 404 Not Found ke server Midtrans
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Pesanan tidak ditemukan'])->setStatusCode(404);
             }
             
-            // Cari data pembayaran terkait
+            // Mencari data pembayaran terkait pesanan tersebut di database lokal
             $pembayaran = $this->pembayaranModel->where('pesanan_id', $pesanan->id)->first();
+            // Jika record pembayaran tidak ditemukan
             if (!$pembayaran) {
+                // Mengembalikan respons error JSON terstruktur dengan HTTP Status 404 Not Found ke server Midtrans
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Data pembayaran tidak ditemukan'])->setStatusCode(404);
             }
             
+            // Inisialisasi variabel status pembayaran lokal, default ke 'belum_dibayar'
             $statusPembayaran = 'belum_dibayar';
+            // Menyimpan jenis pembayaran dari Midtrans ke variabel lokal
             $metodeBayar = $paymentType;
             
+            // Menerjemahkan status transaksi dari Midtrans ke status pembayaran database lokal laundry
             if ($transactionStatus == 'capture') {
                 if ($fraudStatus == 'challenge') {
                     $statusPembayaran = 'belum_dibayar';
@@ -262,17 +276,20 @@ class UserPembayaranController extends BaseController
                 $statusPembayaran = 'gagal';
             }
             
-            // Update status pembayaran ke database
+            // Memperbarui record pembayaran di database lokal dengan metode bayar terbaru dan status pembayaran terkini
             $this->pembayaranModel->update($pembayaran->id, [
                 'metode_bayar'      => $metodeBayar,
                 'status_pembayaran' => $statusPembayaran,
                 'updated_at'        => date('Y-m-d H:i:s')
             ]);
             
+            // Mengembalikan respons sukses dalam format JSON ke server Midtrans untuk menandakan notifikasi telah selesai diterima
             return $this->response->setJSON(['status' => 'success', 'message' => 'Notifikasi Midtrans berhasil diproses']);
             
         } catch (\Throwable $e) {
+            // Mencatat detail error webhook jika proses gagal ke log sistem
             log_message('error', 'Gagal memproses Webhook Midtrans: ' . $e->getMessage());
+            // Mengembalikan respons error HTTP 500 Internal Server Error ke server Midtrans
             return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()])->setStatusCode(500);
         }
     }

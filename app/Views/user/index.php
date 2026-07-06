@@ -29,10 +29,41 @@ Dashboard Pelanggan
         session()->remove('wa_simulation_alerts');
     ?>
     <?php foreach ($waAlerts as $alert): ?>
-        <div class="alert alert-info border-info border-start border-4 shadow-sm" role="alert">
-            <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-whatsapp me-2 text-success"></i> [SIMULASI WHATSAPP] Pesan Terkirim!</h6>
-            <p class="mb-0 text-dark"><strong>Ke:</strong> <?= esc($alert['no_hp']) ?></p>
-            <p class="mb-0 text-muted"><strong>Isi Pesan:</strong> "<?= esc($alert['message']) ?>"</p>
+        <div class="alert alert-info border-info border-start border-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3" role="alert">
+            <div>
+                <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-whatsapp me-2 text-success"></i> [WHATSAPP] Bukti / Notifikasi Siap Dikirim!</h6>
+                <p class="mb-0 text-dark"><strong>Ke:</strong> <?= esc($alert['no_hp']) ?></p>
+                <p class="mb-0 text-muted"><strong>Isi Pesan:</strong> "<?= esc($alert['message']) ?>"</p>
+            </div>
+            <div>
+                <?php 
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $alert['no_hp']);
+                    if (strpos($cleanPhone, '0') === 0) {
+                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                    }
+                ?>
+                <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= rawurlencode($alert['message']) ?>" target="_blank" class="btn btn-success fw-bold d-flex align-items-center shadow-sm">
+                    <i class="bi bi-whatsapp me-2"></i> Kirim ke WhatsApp
+                </a>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
+
+<!-- Completed Bookings In-App Notifications -->
+<?php if (!empty($completedBookings)): ?>
+    <?php foreach ($completedBookings as $comp): ?>
+        <div class="alert alert-success border-success border-start border-4 shadow-sm mb-3 d-flex justify-content-between align-items-center flex-wrap gap-3" role="alert">
+            <div>
+                <h6 class="alert-heading fw-bold mb-1 text-success"><i class="bi bi-check-circle-fill me-2"></i> Cucian Siap Diambil!</h6>
+                <p class="mb-0 text-dark">Pesanan laundry Anda dengan Kode Order <strong><?= esc($comp->order_id) ?></strong> telah <strong>SELESAI</strong> dikerjakan oleh staff kami.</p>
+                <p class="mb-0 text-muted small">Silakan kunjungi counter laundry kami untuk mengambil pakaian bersih Anda.</p>
+            </div>
+            <div>
+                <a href="https://wa.me/628123456789?text=Halo%20Admin%20Laundry,%20saya%20ingin%20mengonfirmasi%20pengambilan%20pesanan%20<?= esc($comp->order_id) ?>" target="_blank" class="btn btn-success fw-bold d-flex align-items-center shadow-sm">
+                    <i class="bi bi-whatsapp me-2"></i> Konfirmasi Pengambilan
+                </a>
+            </div>
         </div>
     <?php endforeach; ?>
 <?php endif; ?>

@@ -2,20 +2,29 @@
 
 namespace App\Controllers;
 
+// Mengimpor BaseController bawaan CodeIgniter beserta Model yang dibutuhkan
 use App\Controllers\BaseController;
 use App\Models\PesananModel;
 use App\Models\LayananModel;
 use App\Models\UserModel;
 
+/**
+ * Controller untuk mengelola pesanan masuk (booking) laundry oleh Admin.
+ * Mengatur filter data, detail transaksi, konfirmasi, penolakan, hingga pembagian tugas staf.
+ */
 class AdminBookingController extends BaseController
 {
+    // Variabel penampung instance model
     protected $pesananModel;
     protected $layananModel;
     protected $userModel;
 
+    /**
+     * Constructor untuk inisialisasi awal saat Controller dipanggil
+     */
     public function __construct()
     {
-        // Instansiasi model yang digunakan untuk Booking
+        // Instansiasi semua model yang digunakan untuk manajemen Booking
         $this->pesananModel = new PesananModel();
         $this->layananModel = new LayananModel();
         $this->userModel    = new UserModel();
@@ -26,17 +35,19 @@ class AdminBookingController extends BaseController
      */
     public function bookingIndex()
     {
-        // Mengambil parameter filter dari query string
+        // 1. Mengambil parameter filter dari URL query string (misal: ?status=pending)
         $statusFilter  = $this->request->getGet('status');
         $tanggalFilter = $this->request->getGet('tanggal');
         $layananFilter = $this->request->getGet('layanan_id');
 
+        // 2. Menyusun query dasar: Menggabungkan tabel pesanan dengan users (pelanggan), jadwal, dan pembayaran
         $pesananQuery = $this->pesananModel
             ->select('pesanan.*, u.name as nama_pelanggan, j.tanggal, j.slot_waktu, pem.status_pembayaran')
             ->join('users u', 'u.id = pesanan.user_id')
             ->join('jadwal j', 'j.id = pesanan.jadwal_id')
             ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left');
 
+        // 3. Menerapkan kondisi filter dinamis jika dipilih oleh admin
         if ($statusFilter) {
             $pesananQuery->where('pesanan.status', $statusFilter);
         }
@@ -46,14 +57,16 @@ class AdminBookingController extends BaseController
         }
 
         if ($layananFilter) {
+            // Menggunakan subquery untuk memfilter pesanan yang mengandung id layanan tertentu
             $pesananQuery->where("pesanan.id IN (SELECT dp_sub.pesanan_id FROM detail_pesanan dp_sub WHERE dp_sub.layanan_id = " . (int)$layananFilter . ")");
         }
 
+        // 4. Mengeksekusi query dengan urutan data terbaru dan membaginya 10 data per halaman
         $booking = $pesananQuery
             ->orderBy('pesanan.created_at', 'DESC')
             ->paginate(10);
 
-        // Gabungkan detail layanan untuk setiap booking
+        // 5. Menggabungkan string nama layanan (misal: "Cuci Kering, Setrika") untuk ditampilkan di baris tabel
         $detailModel = new \App\Models\DetailPesananModel();
         foreach ($booking as $b) {
             $items = $detailModel
@@ -62,17 +75,18 @@ class AdminBookingController extends BaseController
                 ->where('detail_pesanan.pesanan_id', $b->id)
                 ->findAll();
             
+            // Mengubah array nama layanan menjadi satu baris string yang dipisahkan koma
             $b->nama_layanan = implode(', ', array_column($items, 'nama_layanan'));
         }
 
-        // Ambil semua layanan untuk dropdown filter
+        // 6. Mengambil data semua jenis layanan untuk opsi dropdown filter di view
         $layanan  = $this->layananModel->findAll();
 
-        // Memuat view dengan data yang telah difilter dan ditarik dari database beserta pager paginasi
+        // 7. Memuat halaman view dan melempar semua data siap pakai ke dalamnya
         return view('admin/booking/index', [
             'title'         => 'Kelola Booking',
             'booking'       => $booking,
-            'pager'         => $this->pesananModel->pager, // Objek pager untuk link halaman
+            'pager'         => $this->pesananModel->pager, // Objek untuk link tombol halaman
             'layanan'       => $layanan,
             'statusFilter'  => $statusFilter,
             'tanggalFilter' => $tanggalFilter,
@@ -81,26 +95,26 @@ class AdminBookingController extends BaseController
     }
 
     /**
-     * Menampilkan detail item booking pesanan dan opsi assignment staff
+     * Menampilkan detail item booking pesanan tertentu dan opsi penugasan staf pelaksana
      */
     public function bookingShow($id)
     {
-        // Ambil data detail pesanan utama
+        // 1. Ambil data detail pesanan utama beserta informasi relasi pengguna, jadwal, staf, dan pembayaran
         $booking = $this->pesananModel
             ->select('pesanan.*, u.name as nama_pelanggan, u.email, u.no_hp, j.tanggal, j.slot_waktu, s.name as nama_staff, pem.status_pembayaran, pem.metode_bayar')
             ->join('users u', 'u.id = pesanan.user_id')
             ->join('jadwal j', 'j.id = pesanan.jadwal_id')
-            ->join('users s', 's.id = pesanan.staf_id', 'left')
+            ->join('users s', 's.id = pesanan.staf_id', 'left') // Left join karena di awal staf bisa saja belum ditugaskan
             ->join('pembayaran pem', 'pem.pesanan_id = pesanan.id', 'left')
             ->where('pesanan.id', $id)
             ->first();
 
-        // Jika pesanan tidak ditemukan
+        // 2. Validasi perlindungan jika ID pesanan tidak valid / tidak ada di database
         if (!$booking) {
             return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.');
         }
 
-        // Ambil semua item pesanan dari detail_pesanan
+        // 3. Ambil rincian produk/layanan laundry apa saja yang ada di dalam pesanan ini
         $detailModel = new \App\Models\DetailPesananModel();
         $items = $detailModel
             ->select('detail_pesanan.*, l.nama_layanan, l.harga')
@@ -108,69 +122,69 @@ class AdminBookingController extends BaseController
             ->where('detail_pesanan.pesanan_id', $booking->id)
             ->findAll();
 
-        // Hitung total harga gabungan dari seluruh item layanan dalam pesanan ini
+        // 4. Menghitung akumulasi total biaya keseluruhan dari item yang dibeli
         $grandTotal = 0;
         foreach ($items as $item) {
-            $grandTotal += $item->total_harga; // Menambahkan total harga item ke grandTotal
+            $grandTotal += $item->total_harga; 
         }
 
-        // Ambil semua staff aktif untuk dropdown penugasan (assign staff)
+        // 5. Mengambil list semua staf yang aktif (role = staff) untuk dimasukkan ke dropdown penugasan
         $allStaff = $this->userModel->where('role', 'staff')->where('is_active', 1)->findAll();
 
-        // Memuat view detail booking dengan detail seluruh item pesanan
+        // 6. Merender ke view rincian nota/detail booking
         return view('admin/booking/show', [
-            'title'      => 'Detail Booking', // Judul halaman
-            'booking'    => $booking, // Data pesanan utama
-            'items'      => $items, // Daftar item layanan dalam pesanan ini
-            'grandTotal' => $grandTotal, // Total harga gabungan seluruh layanan
-            'allStaff'   => $allStaff, // Daftar staff pelaksana
+            'title'      => 'Detail Booking', 
+            'booking'    => $booking, 
+            'items'      => $items, 
+            'grandTotal' => $grandTotal, 
+            'allStaff'   => $allStaff, 
         ]);
     }
 
     /**
-     * Konfirmasi pesanan / booking masuk
+     * Mengonfirmasi pesanan / booking masuk agar berstatus 'dikonfirmasi'
      */
     public function bookingKonfirmasi($id)
     {
-        // Cari data pesanan terlebih dahulu untuk mendapatkan order_id
+        // 1. Ambil data pesanan target untuk mendapatkan kode kelompoknya ('order_id')
         $pesanan = $this->pesananModel->find($id);
         
         if ($pesanan) {
-            // Mengupdate status pesanan untuk seluruh item dengan order_id yang sama menjadi dikonfirmasi menggunakan Query Builder Model
-            $this->pesananModel->where('order_id', $pesanan->order_id) // Filter berdasarkan order_id yang sama
+            // 2. Mass-update status: Semua item yang memiliki order_id sama diubah statusnya menjadi dikonfirmasi
+            $this->pesananModel->where('order_id', $pesanan->order_id) 
                ->set([
-                   'status'     => 'dikonfirmasi', // Mengubah status menjadi dikonfirmasi
-                   'updated_at' => date('Y-m-d H:i:s') // Mengubah waktu update
+                   'status'     => 'dikonfirmasi', 
+                   'updated_at' => date('Y-m-d H:i:s') 
                ])
-               ->update(); // Menjalankan perintah update pada model
+               ->update(); 
         }
         
-        // Redirect kembali ke halaman detail dengan notifikasi sukses
+        // 3. Refresh halaman detail dengan alert sukses
         return redirect()->to('/admin/booking/' . $id)->with('success', 'Booking berhasil dikonfirmasi!');
     }
 
     /**
-     * Menolak pesanan / booking masuk dengan menyertakan alasan penolakan
+     * Menolak pesanan / booking masuk dan membatalkan status pembayaran terkait
      */
     public function bookingTolak($id)
     {
-        // Mengambil input alasan penolakan dari form
+        // 1. Mengambil alasan penolakan dari form, beri teks default jika kosong
         $alasan = $this->request->getPost('alasan') ?? 'Ditolak oleh admin.';
         
-        // Cari data pesanan terlebih dahulu untuk mendapatkan order_id
+        // 2. Ambil data pesanan target untuk mendapatkan order_id
         $pesanan = $this->pesananModel->find($id);
         
         if ($pesanan) {
-            // Mengupdate status pesanan untuk seluruh item dengan order_id yang sama menjadi ditolak menggunakan Query Builder Model
-            $this->pesananModel->where('order_id', $pesanan->order_id) // Filter berdasarkan order_id yang sama
+            // 3. Perbarui status pesanan menjadi 'ditolak' dan sematkan alasan ke kolom catatan pelanggan
+            $this->pesananModel->where('order_id', $pesanan->order_id) 
                ->set([
-                   'status'     => 'ditolak', // Mengubah status menjadi ditolak
-                   'catatan'    => $alasan, // Menyimpan alasan penolakan ke catatan
-                   'updated_at' => date('Y-m-d H:i:s') // Mengubah waktu update
+                   'status'     => 'ditolak', 
+                   'catatan'    => $alasan, 
+                   'updated_at' => date('Y-m-d H:i:s') 
                ])
-               ->update(); // Menjalankan perintah update pada model
+               ->update(); 
 
-            // Mengupdate status pembayaran terkait menjadi gagal
+            // 4. Batalkan transaksi keuangan: Ubah status rekaman pembayarannya menjadi 'gagal'
             $pembayaranModel = new \App\Models\PembayaranModel();
             $pembayaran = $pembayaranModel->where('pesanan_id', $pesanan->id)->first();
             if ($pembayaran) {
@@ -181,32 +195,32 @@ class AdminBookingController extends BaseController
             }
         }
         
-        // Redirect kembali dengan notifikasi sukses penolakan
+        // 5. Kembali ke halaman rincian dengan notifikasi
         return redirect()->to('/admin/booking/' . $id)->with('success', 'Booking telah ditolak.');
     }
 
     /**
-     * Menugaskan staff pelaksana ke order pesanan
+     * Menugaskan staf pelaksana tertentu ke dalam order pesanan laundry
      */
     public function bookingAssignStaff($id)
     {
-        // Mengambil input staf_id dari form
+        // 1. Tangkap parameter ID staf terpilih dari form penugasan
         $stafId = $this->request->getPost('staf_id');
         
-        // Cari data pesanan terlebih dahulu untuk mendapatkan order_id
+        // 2. Cari entitas datanya untuk mendeteksi order_id kelompok
         $pesanan = $this->pesananModel->find($id);
         
         if ($pesanan) {
-            // Mengupdate staf_id untuk seluruh item dengan order_id yang sama menggunakan Query Builder Model Pesanan
-            $this->pesananModel->where('order_id', $pesanan->order_id) // Filter berdasarkan order_id yang sama
+            // 3. Masukkan ID staf tersebut ke semua baris pesanan yang berada dalam satu kode order_id yang sama
+            $this->pesananModel->where('order_id', $pesanan->order_id) 
                ->set([
-                   'staf_id'    => $stafId, // Mengisi kolom staf_id dengan staff yang dipilih
-                   'updated_at' => date('Y-m-d H:i:s') // Mengubah waktu update
+                   'staf_id'    => $stafId, 
+                   'updated_at' => date('Y-m-d H:i:s') 
                ])
-               ->update(); // Menjalankan perintah update pada model
+               ->update(); 
         }
         
-        // Redirect kembali dengan notifikasi sukses penugasan staff
+        // 4. Halaman dimuat ulang disertai pemberitahuan sukses disposisi kerja staf
         return redirect()->to('/admin/booking/' . $id)->with('success', 'Staff berhasil ditugaskan! Menunggu staff mengambil orderan.');
     }
 }

@@ -19,11 +19,6 @@ class JadwalModel extends Model
     // Mengaktifkan fitur auto increment (AI) agar ID bertambah otomatis saat data baru masuk
     protected $useAutoIncrement = true;
     
-    /**
-     * Mengatur tipe data kembalian hasil query database.
-     * Di CI4 default-nya adalah 'array', namun diubah ke 'object' agar cara pengaksesan data 
-     * di Controller/View bisa menggunakan panah (contoh: $jadwal->tanggal) mirip seperti Eloquent Laravel.
-     */
     protected $returnType       = 'object'; 
     
     // Menonaktifkan fitur Soft Deletes (jika bernilai true, data tidak benar-benar dihapus melainkan hanya diisi kolom deleted_at)

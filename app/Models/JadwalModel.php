@@ -47,14 +47,6 @@ class JadwalModel extends Model
     // Menentukan nama kolom untuk mencatat waktu setiap kali data diperbarui
     protected $updatedField  = 'updated_at';
 
-    /**
-     * Method kustom buatan sendiri untuk menarik data relasi (Relationship).
-     * Karena CodeIgniter 4 tidak menyediakan fitur built-in ORM hasMany seperti Laravel secara default,
-     * method ini dibuat manual untuk mencari semua pesanan yang terhubung dengan ID jadwal tertentu.
-     * 
-     * @param int $jadwalId
-     * @return array
-     */
     public function getPesanan($jadwalId)
     {
         // Instansiasi model pesanan di dalam fungsi
